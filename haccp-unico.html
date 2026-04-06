@@ -272,9 +272,10 @@
             if (!currentProduct) return;
             
             const now = new Date();
+            // Scadenza: X dias após a apertura, mesma hora
             const expiryDate = new Date(now);
             expiryDate.setDate(expiryDate.getDate() + currentProduct.days);
-            expiryDate.setHours(23, 59, 59, 999); // Fim do dia (24h)
+            // Mantém a mesma hora da apertura (24h corridas)
             
             const lotNumber = generateLot();
             
@@ -326,7 +327,7 @@
             const openDateStr = openDate.toLocaleDateString('it-IT');
             const openTimeStr = openDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
             const expDateStr = expDate.toLocaleDateString('it-IT');
-            const expTimeStr = '23:59'; // Fim do dia
+            const expTimeStr = expDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
             
             document.getElementById('labelContent').innerHTML = 
                 '<div class="label-header">' +
@@ -345,7 +346,7 @@
                 '<div><div class="label-label">Responsável</div><div class="label-value">' + record.responsible + '</div></div>' +
                 '<div style="text-align: right;"><div class="label-label">Validade</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
                 '</div>' +
-                '<div class="label-footer">HACCP Control • Validade: 24h após apertura</div>';
+                '<div class="label-footer">HACCP Control • Scadenza: ' + record.daysValid + ' dias após apertura</div>';
             
             document.getElementById('labelModal').classList.add('active');
         }
