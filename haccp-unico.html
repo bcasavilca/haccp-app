@@ -136,6 +136,7 @@
             </div>
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="openProduct()">📦 Nuovo Lotto</button>
+                <button class="btn btn-secondary" id="sameLotBtn" onclick="sameLot()" style="display: none;">📋 Stesso Lotto</button>
                 <button class="btn btn-secondary" onclick="closeModal()">❌ Annulla</button>
             </div>
         </div>
@@ -256,6 +257,25 @@
             currentProduct = PRODUCTS.find(p => p.name === productName);
             if (!currentProduct) return;
             
+            // Verifica se tem lote aberto para este produto
+            const now = new Date();
+            const openRecord = records.find(r => 
+                r.product === currentProduct.name && 
+                r.status === 'open' &&
+                new Date(r.expiryDate) > now
+            );
+            
+            // Mostra/esconde botão "Stesso Lotto"
+            const sameLotBtn = document.getElementById('sameLotBtn');
+            if (openRecord) {
+                sameLotBtn.style.display = 'block';
+                // Guarda referência ao lote atual
+                currentProduct.existingLot = openRecord;
+            } else {
+                sameLotBtn.style.display = 'none';
+                currentProduct.existingLot = null;
+            }
+            
             document.getElementById('modalEmoji').textContent = currentProduct.emoji;
             document.getElementById('modalTitle').textContent = currentProduct.name;
             document.getElementById('modalSubtitle').textContent = 'Validità: ' + currentProduct.days + ' giorni';
@@ -308,6 +328,46 @@
             renderProducts();
             renderHistory();
             updateStats();
+        }
+
+        function sameLot() {
+            if (!currentProduct || !currentProduct.existingLot) return;
+            
+            // Mostra a etiqueta do lote existente (sem emoji)
+            showLabelSimple(currentProduct.existingLot);
+            
+            closeModal();
+        }
+
+        function showLabelSimple(record) {
+            const openDate = new Date(record.openDate);
+            const expDate = new Date(record.expiryDate);
+            
+            const openDateStr = openDate.toLocaleDateString('it-IT');
+            const openTimeStr = openDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+            const expDateStr = expDate.toLocaleDateString('it-IT');
+            const expTimeStr = expDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+            
+            document.getElementById('labelContent').innerHTML = 
+                '<div class="label-header">' +
+                '<div class="label-title">' + record.product + '</div>' +
+                '</div>' +
+                '<div class="label-row">' +
+                '<div><div class="label-label">Lotto Nº</div><div class="label-value label-lot">' + record.lot + '</div></div>' +
+                '</div>' +
+                '<div class="label-row">' +
+                '<div><div class="label-label">Apertura</div><div class="label-value">' + openDateStr + ' ' + openTimeStr + '</div></div>' +
+                '</div>' +
+                '<div class="label-row">' +
+                '<div><div class="label-label">Scadenza (24h)</div><div class="label-value" style="color: #ff4444;">' + expDateStr + ' ' + expTimeStr + '</div></div>' +
+                '</div>' +
+                '<div class="label-row">' +
+                '<div><div class="label-label">Responsável</div><div class="label-value">' + record.responsible + '</div></div>' +
+                '<div style="text-align: right;"><div class="label-label">Validade</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
+                '</div>' +
+                '<div class="label-footer">HACCP Control • Stesso Lotto (già aperto)</div>';
+            
+            document.getElementById('labelModal').classList.add('active');
         }
 
         function generateLot() {
