@@ -274,6 +274,7 @@
             const now = new Date();
             const expiryDate = new Date(now);
             expiryDate.setDate(expiryDate.getDate() + currentProduct.days);
+            expiryDate.setHours(23, 59, 59, 999); // Fim do dia (24h)
             
             const lotNumber = generateLot();
             
@@ -318,8 +319,14 @@
         }
 
         function showLabel(record) {
-            const openDate = new Date(record.openDate).toLocaleDateString('it-IT');
-            const expDate = new Date(record.expiryDate).toLocaleDateString('it-IT');
+            const openDate = new Date(record.openDate);
+            const expDate = new Date(record.expiryDate);
+            
+            // Formata data e hora
+            const openDateStr = openDate.toLocaleDateString('it-IT');
+            const openTimeStr = openDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+            const expDateStr = expDate.toLocaleDateString('it-IT');
+            const expTimeStr = '23:59'; // Fim do dia
             
             document.getElementById('labelContent').innerHTML = 
                 '<div class="label-header">' +
@@ -329,14 +336,16 @@
                 '<div><div class="label-label">Lotto Nº</div><div class="label-value label-lot">' + record.lot + '</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
-                '<div><div class="label-label">Data Apertura</div><div class="label-value">' + openDate + '</div></div>' +
-                '<div style="text-align: right;"><div class="label-label">Validade</div><div class="label-value">' + expDate + '</div></div>' +
+                '<div><div class="label-label">Apertura</div><div class="label-value">' + openDateStr + ' ' + openTimeStr + '</div></div>' +
+                '</div>' +
+                '<div class="label-row">' +
+                '<div><div class="label-label">Scadenza (24h)</div><div class="label-value" style="color: #ff4444;">' + expDateStr + ' ' + expTimeStr + '</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
                 '<div><div class="label-label">Responsável</div><div class="label-value">' + record.responsible + '</div></div>' +
-                '<div style="text-align: right;"><div class="label-label">Dias</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
+                '<div style="text-align: right;"><div class="label-label">Validade</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
                 '</div>' +
-                '<div class="label-footer">HACCP Control • Validade garantida</div>';
+                '<div class="label-footer">HACCP Control • Validade: 24h após apertura</div>';
             
             document.getElementById('labelModal').classList.add('active');
         }
