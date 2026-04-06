@@ -66,6 +66,24 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #1a1a2e; }
         ::-webkit-scrollbar-thumb { background: #3a3a6e; border-radius: 3px; }
+        
+        /* Estilos da Etiqueta */
+        .label-container { background: #fff; color: #000; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .label-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+        .label-title { font-size: 1.4rem; font-weight: bold; text-transform: uppercase; }
+        .label-row { display: flex; justify-content: space-between; margin: 12px 0; padding: 8px 0; border-bottom: 1px solid #ccc; }
+        .label-row:last-child { border-bottom: none; }
+        .label-label { font-size: 0.8rem; color: #666; text-transform: uppercase; }
+        .label-value { font-size: 1.1rem; font-weight: bold; }
+        .label-lot { background: #000; color: #fff; padding: 5px 10px; border-radius: 4px; font-family: monospace; }
+        .label-footer { margin-top: 15px; padding-top: 10px; border-top: 2px solid #000; text-align: center; font-size: 0.7rem; color: #666; }
+        @media print {
+            body * { visibility: hidden; }
+            #labelModal, #labelModal * { visibility: visible; }
+            #labelModal { position: absolute; left: 0; top: 0; width: 100%; }
+            .modal-content { background: #fff !important; color: #000 !important; }
+            .btn-group { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -131,6 +149,22 @@
             </div>
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="closeConfirmModal()">OK</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="labelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-emoji">🏷️</div>
+                <h2 class="modal-title">Etichetta Lotto</h2>
+                <p class="modal-subtitle">Stampa e collega al prodotto</p>
+            </div>
+            <div class="label-container" id="labelContent">
+                <!-- Etiqueta será gerada aqui -->
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="printLabel()">🖨️ Stampa</button>
+                <button class="btn btn-secondary" onclick="closeLabelModal()">Chiudi</button>
             </div>
         </div>
     </div>
@@ -241,6 +275,8 @@
             const expiryDate = new Date(now);
             expiryDate.setDate(expiryDate.getDate() + currentProduct.days);
             
+            const lotNumber = generateLot();
+            
             const record = {
                 id: Date.now(),
                 product: currentProduct.name,
@@ -249,7 +285,8 @@
                 expiryDate: expiryDate.toISOString(),
                 daysValid: currentProduct.days,
                 status: 'open',
-                lot: generateLot()
+                lot: lotNumber,
+                responsible: 'Bruno'
             };
             
             records.forEach(r => {
@@ -263,9 +300,8 @@
             
             closeModal();
             
-            const formattedDate = expiryDate.toLocaleDateString('it-IT');
-            document.getElementById('confirmSubtitle').textContent = 'Lotto: ' + record.lot + ' | Scadenza: ' + formattedDate;
-            document.getElementById('confirmModal').classList.add('active');
+            // Mostra a etiqueta
+            showLabel(record);
             
             renderProducts();
             renderHistory();
@@ -273,10 +309,44 @@
         }
 
         function generateLot() {
-            const now = new Date();
-            const date = now.toISOString().slice(0, 10).replace(/-/g, '');
-            const time = now.toTimeString().slice(0, 5).replace(':', '');
-            return date + '-' + time;
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let lot = '';
+            for (let i = 0; i < 6; i++) {
+                lot += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return 'LT-' + lot;
+        }
+
+        function showLabel(record) {
+            const openDate = new Date(record.openDate).toLocaleDateString('it-IT');
+            const expDate = new Date(record.expiryDate).toLocaleDateString('it-IT');
+            
+            document.getElementById('labelContent').innerHTML = 
+                '<div class="label-header">' +
+                '<div class="label-title">' + record.emoji + ' ' + record.product + '</div>' +
+                '</div>' +
+                '<div class="label-row">' +
+                '<div><div class="label-label">Lotto Nº</div><div class="label-value label-lot">' + record.lot + '</div></div>' +
+                '</div>' +
+                '<div class="label-row">' +
+                '<div><div class="label-label">Data Apertura</div><div class="label-value">' + openDate + '</div></div>' +
+                '<div style="text-align: right;"><div class="label-label">Validade</div><div class="label-value">' + expDate + '</div></div>' +
+                '</div>' +
+                '<div class="label-row">' +
+                '<div><div class="label-label">Responsável</div><div class="label-value">' + record.responsible + '</div></div>' +
+                '<div style="text-align: right;"><div class="label-label">Dias</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
+                '</div>' +
+                '<div class="label-footer">HACCP Control • Validade garantida</div>';
+            
+            document.getElementById('labelModal').classList.add('active');
+        }
+
+        function closeLabelModal() {
+            document.getElementById('labelModal').classList.remove('active');
+        }
+
+        function printLabel() {
+            window.print();
         }
 
         function closeConfirmModal() {
