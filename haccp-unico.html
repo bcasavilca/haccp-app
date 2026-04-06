@@ -362,8 +362,8 @@
                 '<div><div class="label-label">Scadenza (24h)</div><div class="label-value" style="color: #ff4444;">' + expDateStr + ' ' + expTimeStr + '</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
-                '<div><div class="label-label">Responsável</div><div class="label-value">' + record.responsible + '</div></div>' +
-                '<div style="text-align: right;"><div class="label-label">Validade</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
+                '<div><div class="label-label">Responsabile</div><div class="label-value">' + record.responsible + '</div></div>' +
+                '<div style="text-align: right;"><div class="label-label">Validità</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
                 '</div>' +
                 '<div class="label-footer">HACCP Control • Stesso Lotto (già aperto)</div>';
             
@@ -391,7 +391,7 @@
             
             document.getElementById('labelContent').innerHTML = 
                 '<div class="label-header">' +
-                '<div class="label-title">' + record.emoji + ' ' + record.product + '</div>' +
+                '<div class="label-title">' + record.product + '</div>' +
                 '</div>' +
                 '<div class="label-row">' +
                 '<div><div class="label-label">Lotto Nº</div><div class="label-value label-lot">' + record.lot + '</div></div>' +
@@ -403,10 +403,10 @@
                 '<div><div class="label-label">Scadenza (24h)</div><div class="label-value" style="color: #ff4444;">' + expDateStr + ' ' + expTimeStr + '</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
-                '<div><div class="label-label">Responsável</div><div class="label-value">' + record.responsible + '</div></div>' +
-                '<div style="text-align: right;"><div class="label-label">Validade</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
+                '<div><div class="label-label">Responsabile</div><div class="label-value">' + record.responsible + '</div></div>' +
+                '<div style="text-align: right;"><div class="label-label">Validità</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
                 '</div>' +
-                '<div class="label-footer">HACCP Control • Scadenza: ' + record.daysValid + ' dias após apertura</div>';
+                '<div class="label-footer">HACCP Control • Scadenza: ' + record.daysValid + ' giorni dopo apertura</div>';
             
             document.getElementById('labelModal').classList.add('active');
         }
