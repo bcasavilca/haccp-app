@@ -132,6 +132,10 @@
                 <h2 class="modal-title" id="modalTitle">Hamburger</h2>
                 <p class="modal-subtitle" id="modalSubtitle">Validità: 1 giorno</p>
             </div>
+            <div class="form-group" style="padding: 0 20px; margin-bottom: 15px;">
+                <label style="display: block; color: #888; font-size: 0.85rem; margin-bottom: 5px;">Fornitore</label>
+                <input type="text" id="fornitoreInput" value="Niki Romito" style="width: 100%; padding: 10px; background: #252550; border: 1px solid #3a3a6e; border-radius: 8px; color: #fff; font-size: 1rem;" placeholder="Nome fornitore...">
+            </div>
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="openProduct()">📦 Nuovo Lotto</button>
                 <button class="btn btn-secondary" id="sameLotBtn" onclick="sameLot()" style="display: none;">📋 Stesso Lotto</button>
@@ -292,6 +296,9 @@
             
             const lotNumber = generateLot();
             
+            // Pega o fornitore do input
+            const fornitore = document.getElementById('fornitoreInput')?.value || 'Niki Romito';
+            
             const record = {
                 id: Date.now(),
                 product: currentProduct.name,
@@ -301,7 +308,8 @@
                 daysValid: currentProduct.days,
                 status: 'open',
                 lot: lotNumber,
-                responsible: 'Bruno'
+                responsible: 'Bruno',
+                fornitore: fornitore
             };
             
             records.forEach(r => {
@@ -349,6 +357,9 @@
                 '<div><div class="label-label">Lotto Nº</div><div class="label-value label-lot">' + record.lot + '</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
+                '<div><div class="label-label">Fornitore</div><div class="label-value">' + (record.fornitore || 'Niki Romito') + '</div></div>' +
+                '</div>' +
+                '<div class="label-row">' +
                 '<div><div class="label-label">Apertura</div><div class="label-value">' + openDateStr + ' ' + openTimeStr + '</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
@@ -388,6 +399,9 @@
                 '</div>' +
                 '<div class="label-row">' +
                 '<div><div class="label-label">Lotto Nº</div><div class="label-value label-lot">' + record.lot + '</div></div>' +
+                '</div>' +
+                '<div class="label-row">' +
+                '<div><div class="label-label">Fornitore</div><div class="label-value">' + (record.fornitore || 'Niki Romito') + '</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
                 '<div><div class="label-label">Apertura</div><div class="label-value">' + openDateStr + ' ' + openTimeStr + '</div></div>' +
