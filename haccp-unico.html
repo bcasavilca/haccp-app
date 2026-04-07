@@ -69,20 +69,37 @@
         
         /* Estilos da Etiqueta */
         .label-container { background: #fff; color: #000; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .label-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
-        .label-title { font-size: 1.4rem; font-weight: bold; text-transform: uppercase; }
-        .label-row { display: flex; justify-content: space-between; margin: 12px 0; padding: 8px 0; border-bottom: 1px solid #ccc; }
+        .label-header { text-align: center; padding-bottom: 10px; margin-bottom: 15px; }
+        .label-title { font-size: 1.3rem; font-weight: bold; }
+        .label-row { display: flex; justify-content: space-between; margin: 10px 0; padding: 6px 0; border-bottom: 1px solid #ccc; }
         .label-row:last-child { border-bottom: none; }
         .label-label { font-size: 0.8rem; color: #666; text-transform: uppercase; }
-        .label-value { font-size: 1.1rem; font-weight: bold; }
-        .label-lot { font-family: monospace; font-size: 1.2rem; letter-spacing: 1px; }
-        .label-footer { margin-top: 15px; padding-top: 10px; border-top: 2px solid #000; text-align: center; font-size: 0.7rem; color: #666; }
+        .label-value { font-size: 1rem; font-weight: normal; }
+        .label-lot { font-family: monospace; font-size: 1.1rem; letter-spacing: 1px; }
+        .label-footer { margin-top: 15px; padding-top: 10px; border-top: 1px solid #ccc; text-align: center; font-size: 0.7rem; color: #666; }
         @media print {
             body * { visibility: hidden; }
             #labelModal, #labelModal * { visibility: visible; }
             #labelModal { position: absolute; left: 0; top: 0; width: 100%; }
             .modal-content { background: #fff !important; color: #000 !important; }
             .btn-group { display: none; }
+        }
+        .touch-instructions {
+            background: #252550;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .touch-instructions p {
+            margin: 8px 0;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .touch-instructions strong {
+            color: #ff6b35;
         }
     </style>
 </head>
@@ -132,9 +149,11 @@
                 <h2 class="modal-title" id="modalTitle">Hamburger</h2>
                 <p class="modal-subtitle" id="modalSubtitle">Validità: 1 giorno</p>
             </div>
+            <div class="touch-instructions">
+                <p>👆 <strong>Tocco breve</strong> = Stesso Lotto</p>
+                <p>👆👆 <strong>Tocco lungo</strong> = Nuovo Lotto</p>
+            </div>
             <div class="btn-group">
-                <button class="btn btn-primary" onclick="openProduct()">📦 Nuovo Lotto</button>
-                <button class="btn btn-secondary" id="sameLotBtn" onclick="sameLot()" style="display: none;">📋 Stesso Lotto</button>
                 <button class="btn btn-secondary" onclick="closeModal()">❌ Annulla</button>
             </div>
         </div>
@@ -258,22 +277,57 @@
                 new Date(r.expiryDate) > now
             );
             
-            // Mostra/esconde botão "Stesso Lotto"
-            const sameLotBtn = document.getElementById('sameLotBtn');
-            if (openRecord) {
-                sameLotBtn.style.display = 'block';
-                // Guarda referência ao lote atual
-                currentProduct.existingLot = openRecord;
-            } else {
-                sameLotBtn.style.display = 'none';
-                currentProduct.existingLot = null;
-            }
+            // Guarda referência
+            currentProduct.existingLot = openRecord || null;
+            currentProduct.hasOpenLot = !!openRecord;
             
             document.getElementById('modalEmoji').textContent = currentProduct.emoji;
             document.getElementById('modalTitle').textContent = currentProduct.name;
             document.getElementById('modalSubtitle').textContent = 'Validità: ' + currentProduct.days + ' giorni';
             
-            document.getElementById('actionModal').classList.add('active');
+            // Configurar touch events
+            const modal = document.getElementById('actionModal');
+            const modalContent = modal.querySelector('.modal-content');
+            
+            // Remover listeners antigos
+            modalContent.removeEventListener('touchstart', handleTouchStart);
+            modalContent.removeEventListener('touchend', handleTouchEnd);
+            
+            // Adicionar novos listeners
+            modalContent.addEventListener('touchstart', handleTouchStart, {passive: true});
+            modalContent.addEventListener('touchend', handleTouchEnd, {passive: true});
+            
+            modal.classList.add('active');
+        }
+
+        let touchStartTime = 0;
+        const LONG_PRESS_DURATION = 500; // 500ms para toque longo
+
+        function handleTouchStart(e) {
+            touchStartTime = Date.now();
+        }
+
+        function handleTouchEnd(e) {
+            const touchDuration = Date.now() - touchStartTime;
+            
+            // Se tocou no modal-content (não em botões)
+            if (e.target.classList.contains('modal-content') || 
+                e.target.closest('.modal-content') && 
+                !e.target.closest('.btn')) {
+                
+                if (touchDuration < LONG_PRESS_DURATION) {
+                    // Toque curto = Stesso Lotto
+                    if (currentProduct?.hasOpenLot) {
+                        sameLot();
+                    } else {
+                        // Se não tem lote aberto, mostra mensagem
+                        alert('Nessun lotto aperto. Tieni premuto per aprire nuovo lotto.');
+                    }
+                } else {
+                    // Toque longo = Nuovo Lotto
+                    openProduct();
+                }
+            }
         }
 
         function closeModal() {
@@ -394,10 +448,10 @@
                 '</div>' +
                 '<div class="label-row">' +
                 '<div><div class="label-label">Scadenza (24h)</div><div class="label-value" style="color: #ff4444;">' + expDateStr + ' ' + expTimeStr + '</div></div>' +
+                '<div style="text-align: right;"><div class="label-label">Validità</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
                 '<div><div class="label-label">Responsabile</div><div class="label-value">' + record.responsible + '</div></div>' +
-                '<div style="text-align: right;"><div class="label-label">Validità</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
                 '</div>' +
                 '<div class="label-footer">HACCP Control • Scadenza: ' + record.daysValid + ' giorni dopo apertura</div>';
             
