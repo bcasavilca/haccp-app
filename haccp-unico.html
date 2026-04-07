@@ -139,10 +139,43 @@
                 <label style="display: block; color: #888; font-size: 0.85rem; margin-bottom: 5px;">Fornitore</label>
                 <input type="text" id="fornitoreInput" value="Niki Romito" style="width: 100%; padding: 10px; background: #252550; border: 1px solid #3a3a6e; border-radius: 8px; color: #fff; font-size: 1rem;" placeholder="Nome fornitore...">
             </div>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="openProduct()">📦 Nuovo Lotto</button>
-                <button class="btn btn-secondary" id="sameLotBtn" onclick="sameLot()" style="display: none;">📋 Stesso Lotto</button>
-                <button class="btn btn-secondary" onclick="closeModal()">❌ Annulla</button>
+            <div style="padding: 0 20px; margin-bottom: 10px; color: #888; font-size: 0.8rem;">
+                Scegli la fase:
+            </div>
+            <div class="btn-group" style="flex-direction: column; padding: 0 20px;">
+                <button class="btn btn-secondary" onclick="enterFreezer()" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); margin-bottom: 8px;">
+                    ❄️ Entrata Freezer
+                </button>
+                <button class="btn btn-secondary" onclick="enterCella()" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); margin-bottom: 8px;">
+                    🧊 Entrata Cella (Scongelio)
+                </button>
+                <button class="btn btn-secondary" onclick="showCucinaOptions()" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); margin-bottom: 8px;">
+                    🍳 Entrata Cucina
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()" style="margin-top: 10px;">
+                    ❌ Annulla
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="cucinaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-emoji" id="cucinaEmoji">🍳</div>
+                <h2 class="modal-title" id="cucinaTitle">Cucina</h2>
+                <p class="modal-subtitle">Scegli il tipo di apertura</p>
+            </div>
+            <div class="btn-group" style="flex-direction: column; padding: 0 20px;">
+                <button class="btn btn-primary" onclick="enterCucinaNew()" style="margin-bottom: 8px;">
+                    📦 Nuovo Lotto
+                </button>
+                <button class="btn btn-secondary" id="sameLotCucinaBtn" onclick="enterCucinaSame()" style="display: none; margin-bottom: 8px;">
+                    📋 Stesso Lotto
+                </button>
+                <button class="btn btn-secondary" onclick="closeCucinaModal()" style="margin-top: 10px;">
+                    ← Indietro
+                </button>
             </div>
         </div>
     </div>
@@ -478,6 +511,183 @@
 
         function closeConfirmModal() {
             document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        // NOVAS FUNCOES - MODO COMODOS
+        
+        function enterFreezer() {
+            if (!currentProduct) return;
+            
+            const now = new Date();
+            const lotNumber = generateLot();
+            const fornitore = document.getElementById('fornitoreInput')?.value || 'Niki Romito';
+            
+            const record = {
+                id: Date.now(),
+                product: currentProduct.name,
+                emoji: currentProduct.emoji,
+                freezerDate: now.toISOString(),
+                cellaDate: null,
+                cucinaDate: null,
+                daysValid: currentProduct.days,
+                status: 'freezer',
+                lot: lotNumber,
+                responsible: 'Bruno',
+                fornitore: fornitore,
+                currentStage: 'freezer'
+            };
+            
+            records.push(record);
+            saveRecords();
+            closeModal();
+            
+            showLabel(record);
+            renderProducts();
+            renderHistory();
+            updateStats();
+        }
+        
+        function enterCella() {
+            if (!currentProduct) return;
+            
+            // Verifica se tem produto no freezer para mover
+            const freezerRecord = records.find(r => 
+                r.product === currentProduct.name && 
+                r.status === 'freezer'
+            );
+            
+            if (freezerRecord) {
+                // Move do freezer para cella
+                freezerRecord.cellaDate = new Date().toISOString();
+                freezerRecord.status = 'cella';
+                freezerRecord.currentStage = 'cella';
+                freezerRecord.cellaAlert = true; // Alerta max 12h
+                saveRecords();
+                closeModal();
+                showLabel(freezerRecord);
+            } else {
+                // Novo registro direto na cella
+                const now = new Date();
+                const lotNumber = generateLot();
+                const fornitore = document.getElementById('fornitoreInput')?.value || 'Niki Romito';
+                
+                const record = {
+                    id: Date.now(),
+                    product: currentProduct.name,
+                    emoji: currentProduct.emoji,
+                    freezerDate: null,
+                    cellaDate: now.toISOString(),
+                    cucinaDate: null,
+                    daysValid: currentProduct.days,
+                    status: 'cella',
+                    lot: lotNumber,
+                    responsible: 'Bruno',
+                    fornitore: fornitore,
+                    currentStage: 'cella',
+                    cellaAlert: true
+                };
+                
+                records.push(record);
+                saveRecords();
+                closeModal();
+                showLabel(record);
+            }
+            
+            renderProducts();
+            renderHistory();
+            updateStats();
+        }
+        
+        function showCucinaOptions() {
+            // Verifica se tem lote aberto
+            const openRecord = records.find(r => 
+                r.product === currentProduct?.name && 
+                (r.status === 'freezer' || r.status === 'cella')
+            );
+            
+            const sameLotBtn = document.getElementById('sameLotCucinaBtn');
+            if (openRecord) {
+                sameLotBtn.style.display = 'block';
+                currentProduct.existingLot = openRecord;
+            } else {
+                sameLotBtn.style.display = 'none';
+                currentProduct.existingLot = null;
+            }
+            
+            document.getElementById('cucinaEmoji').textContent = currentProduct?.emoji || '🍳';
+            document.getElementById('cucinaTitle').textContent = currentProduct?.name || 'Cucina';
+            document.getElementById('cucinaModal').classList.add('active');
+        }
+        
+        function closeCucinaModal() {
+            document.getElementById('cucinaModal').classList.remove('active');
+        }
+        
+        function enterCucinaNew() {
+            if (!currentProduct) return;
+            
+            const now = new Date();
+            const expiryDate = new Date(now.getTime() + (currentProduct.days * 24 * 60 * 60 * 1000));
+            const lotNumber = generateLot();
+            const fornitore = document.getElementById('fornitoreInput')?.value || 'Niki Romito';
+            
+            // Fecha registros anteriores do mesmo produto
+            records.forEach(r => {
+                if (r.product === currentProduct.name && r.status === 'open') {
+                    r.status = 'closed';
+                }
+            });
+            
+            const record = {
+                id: Date.now(),
+                product: currentProduct.name,
+                emoji: currentProduct.emoji,
+                freezerDate: null,
+                cellaDate: null,
+                cucinaDate: now.toISOString(),
+                openDate: now.toISOString(),
+                expiryDate: expiryDate.toISOString(),
+                daysValid: currentProduct.days,
+                status: 'open',
+                lot: lotNumber,
+                responsible: 'Bruno',
+                fornitore: fornitore,
+                currentStage: 'cucina'
+            };
+            
+            records.push(record);
+            saveRecords();
+            closeCucinaModal();
+            closeModal();
+            
+            showLabel(record);
+            renderProducts();
+            renderHistory();
+            updateStats();
+        }
+        
+        function enterCucinaSame() {
+            if (!currentProduct || !currentProduct.existingLot) return;
+            
+            const existingRecord = currentProduct.existingLot;
+            const now = new Date();
+            const expiryDate = new Date(now.getTime() + (currentProduct.days * 24 * 60 * 60 * 1000));
+            
+            // Atualiza o registro existente
+            existingRecord.cucinaDate = now.toISOString();
+            existingRecord.openDate = now.toISOString();
+            existingRecord.expiryDate = expiryDate.toISOString();
+            existingRecord.status = 'open';
+            existingRecord.currentStage = 'cucina';
+            
+            saveRecords();
+            closeCucinaModal();
+            closeModal();
+            
+            showLabel(existingRecord);
+            renderProducts();
+            renderHistory();
+            updateStats();
         }
 
         function renderHistory() {
