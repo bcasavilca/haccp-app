@@ -417,13 +417,11 @@
 
         function showLabel(record) {
             const openDate = new Date(record.openDate);
-            const expDate = new Date(record.expiryDate);
+            const expDate = record.expiryDate ? new Date(record.expiryDate) : null;
             
             // Formata data e hora
             const openDateStr = openDate.toLocaleDateString('it-IT');
             const openTimeStr = openDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-            const expDateStr = expDate.toLocaleDateString('it-IT');
-            const expTimeStr = expDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
             
             // Verifica se tem dados dos 3 estagios
             const hasStages = record.freezerDate || record.cellaDate || record.cucinaDate;
@@ -432,63 +430,71 @@
                 '<div class="label-title">' + record.product + '</div>' +
                 '</div>' +
                 '<div class="label-row">' +
-                '<div><div class="label-label">Lotto Nº</div><div class="label-value label-lot">' + record.lot + '</div></div>' +
+                '<div><div class="label-label">Lotto N</div><div class="label-value label-lot">' + record.lot + '</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
                 '<div><div class="label-label">Fornitore</div><div class="label-value">' + (record.fornitore || 'Niki Romito') + '</div></div>' +
                 '</div>';
             
-            // Adiciona estagios se disponiveis
+            // Adiciona estagios (sem cores)
             if (record.freezerDate) {
-                labelHTML += '<div class="label-row" style="background:#e3f2fd;border-left:4px solid #2196f3;padding:8px;">' +
-                    '<div style="flex:1;"><div class="label-label">❄️ Freezer</div><div class="label-value">' + formatDateTime(record.freezerDate) + '</div></div>' +
+                const freezerDt = new Date(record.freezerDate);
+                labelHTML += '<div class="label-row">' +
+                    '<div><div class="label-label">Freezer</div><div class="label-value">' + freezerDt.toLocaleDateString('it-IT') + ' ' + freezerDt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
                     '</div>';
             }
+            
             if (record.cellaDate) {
-                const cellaAlert = record.cellaAlert ? ' <span style="color:#ff4444;">⚠️ Max 12h</span>' : '';
-                labelHTML += '<div class="label-row" style="background:#fff3e0;border-left:4px solid #ff9800;padding:8px;">' +
-                    '<div style="flex:1;"><div class="label-label">🧊 Cella</div><div class="label-value">' + formatDateTime(record.cellaDate) + cellaAlert + '</div></div>' +
+                const cellaDt = new Date(record.cellaDate);
+                const cellaExit = new Date(cellaDt.getTime() + (12 * 60 * 60 * 1000)); // +12h
+                const finalExpiry = new Date(cellaExit.getTime() + (record.daysValid * 24 * 60 * 60 * 1000)); // + dias do produto
+                
+                labelHTML += '<div class="label-row">' +
+                    '<div><div class="label-label">Cella</div><div class="label-value">' + cellaDt.toLocaleDateString('it-IT') + ' ' + cellaDt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
+                    '</div>';
+                
+                labelHTML += '<div class="label-row">' +
+                    '<div><div class="label-label">Uscita Cella Entro</div><div class="label-value">' + cellaExit.toLocaleDateString('it-IT') + ' ' + cellaExit.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
+                    '</div>';
+                
+                // Scadenza final (saida cella + dias do produto)
+                labelHTML += '<div class="label-row">' +
+                    '<div><div class="label-label">Scadenza (' + record.daysValid + ' GG)</div><div class="label-value" style="color: #ff4444;">' + finalExpiry.toLocaleDateString('it-IT') + ' ' + finalExpiry.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
                     '</div>';
             }
+            
             if (record.cucinaDate) {
-                labelHTML += '<div class="label-row" style="background:#e8f5e9;border-left:4px solid #4caf50;padding:8px;">' +
-                    '<div style="flex:1;"><div class="label-label">🍳 Cucina</div><div class="label-value">' + formatDateTime(record.cucinaDate) + '</div></div>' +
+                const cucinaDt = new Date(record.cucinaDate);
+                labelHTML += '<div class="label-row">' +
+                    '<div><div class="label-label">Cucina</div><div class="label-value">' + cucinaDt.toLocaleDateString('it-IT') + ' ' + cucinaDt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
                     '</div>';
             }
             
             // Se nao tem estagios, mostra apertura padrao
-            if (!hasStages) {
+            if (!hasStages && record.openDate) {
                 labelHTML += '<div class="label-row">' +
                     '<div><div class="label-label">Apertura</div><div class="label-value">' + openDateStr + ' ' + openTimeStr + '</div></div>' +
                     '</div>';
-            }
-            
-            // Se tem cella, calcula scadenza de 12h
-            if (record.cellaDate && !record.cucinaDate) {
-                const cellaExpiry = record.cellaExpiryDate ? new Date(record.cellaExpiryDate) : new Date(new Date(record.cellaDate).getTime() + (12 * 60 * 60 * 1000));
-                const cellaExpStr = cellaExpiry.toLocaleDateString('it-IT');
-                const cellaExpTimeStr = cellaExpiry.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
                 
-                labelHTML += '<div class="label-row" style="background:#fff3e0;border:2px solid #ff9800;padding:8px;border-radius:6px;margin-top:8px;">' +
-                    '<div style="flex:1;"><div class="label-label">⚠️ USCITA CELLA ENTRO</div><div class="label-value" style="color:#ff4444;font-size:1.1rem;font-weight:bold;">' + cellaExpStr + ' ' + cellaExpTimeStr + '</div></div>' +
-                    '</div>';
+                if (expDate) {
+                    labelHTML += '<div class="label-row">' +
+                        '<div><div class="label-label">Scadenza (' + record.daysValid + ' GG)</div><div class="label-value" style="color: #ff4444;">' + expDate.toLocaleDateString('it-IT') + ' ' + expDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
+                        '</div>';
+                }
             }
             
             labelHTML += '<div class="label-row">' +
-                '<div><div class="label-label">Scadenza Cucina (' + record.daysValid + ' GG)</div><div class="label-value" style="color: #ff4444;">' + expDateStr + ' ' + expTimeStr + '</div></div>' +
-                '</div>' +
-                '<div class="label-row">' +
                 '<div><div class="label-label">Responsabile</div><div class="label-value">' + record.responsible + '</div></div>' +
-                '<div style="text-align: right;"><div class="label-label">Validità</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
+                '<div style="text-align: right;"><div class="label-label">Validita</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
                 '</div>';
             
             // FIFO note
             if (record.fifoNote) {
-                labelHTML += '<div style="background:#ffffcc;border:1px solid #ffcc00;padding:6px;border-radius:4px;font-size:0.75rem;margin-top:8px;text-align:center;">' +
-                    '⏰ FIFO: ' + record.fifoNote + '</div>';
+                labelHTML += '<div style="padding:6px;font-size:0.75rem;margin-top:8px;text-align:center;">' +
+                    'FIFO: ' + record.fifoNote + '</div>';
             }
             
-            labelHTML += '<div class="label-footer">HACCP Control • ' + (hasStages ? 'Modo Cômodos' : 'Scadenza: ' + record.daysValid + ' giorni') + '</div>';
+            labelHTML += '<div class="label-footer">HACCP Control</div>';
             
             document.getElementById('labelContent').innerHTML = labelHTML;
             document.getElementById('labelModal').classList.add('active');
