@@ -285,10 +285,9 @@
             if (!currentProduct) return;
             
             const now = new Date();
-            // Scadenza: X dias após a apertura, mesma hora
-            const expiryDate = new Date(now);
-            expiryDate.setDate(expiryDate.getDate() + currentProduct.days);
-            // Mantém a mesma hora da apertura (24h corridas)
+            // CORREÇÃO: Criar data de expiração correta
+            // Adiciona X dias à data/hora ATUAL (não meia-noite)
+            const expiryDate = new Date(now.getTime() + (currentProduct.days * 24 * 60 * 60 * 1000));
             
             const lotNumber = generateLot();
             
