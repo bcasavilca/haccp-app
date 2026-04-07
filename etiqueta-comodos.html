@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etiqueta HACCP - Modo Cômodos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Courier New', monospace; 
+            background: #f5f5f5; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+        }
+        .label-container { 
+            background: #fff; 
+            color: #000; 
+            padding: 20px; 
+            border-radius: 8px; 
+            width: 350px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 2px solid #000;
+        }
+        .label-header { 
+            text-align: center; 
+            border-bottom: 2px solid #000; 
+            padding-bottom: 10px; 
+            margin-bottom: 15px; 
+        }
+        .label-title { 
+            font-size: 1.4rem; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .label-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 10px 0; 
+            padding: 6px 0; 
+            border-bottom: 1px dashed #999; 
+        }
+        .label-row:last-child { border-bottom: none; }
+        .label-label { 
+            font-size: 0.75rem; 
+            color: #666; 
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .label-value { 
+            font-size: 1rem; 
+            font-weight: bold; 
+            text-align: right;
+        }
+        .label-lot { 
+            font-family: monospace; 
+            font-size: 1.1rem; 
+            letter-spacing: 1px; 
+            color: #000;
+        }
+        .stage-row {
+            background: #f9f9f9;
+            border-left: 4px solid;
+            padding: 8px 10px;
+            margin: 8px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .stage-freezer { border-left-color: #0066cc; }
+        .stage-cella { border-left-color: #ff9900; }
+        .stage-cucina { border-left-color: #00cc66; }
+        .stage-label {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .stage-value {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #000;
+        }
+        .stage-alert {
+            color: #ff4444;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .expiry-row {
+            background: #ff4444;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .expiry-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+        .expiry-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .label-footer { 
+            margin-top: 15px; 
+            padding-top: 10px; 
+            border-top: 2px solid #000; 
+            text-align: center; 
+            font-size: 0.65rem; 
+            color: #666; 
+        }
+        .fifo-note {
+            background: #ffffcc;
+            border: 1px solid #ffcc00;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            text-align: center;
+        }
+        @media print {
+            body { background: #fff; }
+            .label-container { 
+                box-shadow: none; 
+                border: 2px solid #000;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ETIQUETA EXEMPLO - MODO CÔMODOS -->
+    <div class="label-container">
+        <div class="label-header">
+            <div class="label-title">🥓 PANCETA</div>
+        </div>
+        
+        <div class="label-row">
+            <div>
+                <div class="label-label">Lotto Nº</div>
+                <div class="label-value label-lot">LT-A7B9K2</div>
+            </div>
+        </div>
+        
+        <div class="label-row">
+            <div>
+                <div class="label-label">Fornitore</div>
+                <div class="label-value">Niki Romito</div>
+            </div>
+        </div>
+        
+        <div class="stage-row stage-freezer">
+            <span class="stage-label">❄️ FREEZER (Arrivo)</span>
+            <span class="stage-value">07/04 08:00</span>
+        </div>
+        
+        <div class="stage-row stage-cella">
+            <span class="stage-label">🧊 CELLA (Scongelio)</span>
+            <span class="stage-value">07/04 14:00</span>
+            <span class="stage-alert">⚠️ Max 12h</span>
+        </div>
+        
+        <div class="stage-row stage-cucina">
+            <span class="stage-label">🍳 CUCINA (Ricarica)</span>
+            <span class="stage-value">08/04 10:00</span>
+        </div>
+        
+        <div class="expiry-row">
+            <div class="expiry-label">SCADENZA (4 GG)</div>
+            <div class="expiry-value">12/04 10:00</div>
+        </div>
+        
+        <div class="fifo-note">
+            ⏰ FIFO: Usare prima del Lotto XXXX
+        </div>
+        
+        <div class="label-footer">
+            HACCP Control • Modo Cômodos
+        </div>
+    </div>
+</body>
+</html>
