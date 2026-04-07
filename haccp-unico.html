@@ -450,16 +450,16 @@
                 const finalExpiry = new Date(cellaExit.getTime() + (record.daysValid * 24 * 60 * 60 * 1000)); // + dias do produto
                 
                 labelHTML += '<div class="label-row">' +
-                    '<div><div class="label-label">Cella</div><div class="label-value">' + cellaDt.toLocaleDateString('it-IT') + ' ' + cellaDt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
+                    '<div><div class="label-label">Scongelo</div><div class="label-value">' + cellaDt.toLocaleDateString('it-IT') + ' ' + cellaDt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
                     '</div>';
                 
                 labelHTML += '<div class="label-row">' +
-                    '<div><div class="label-label">Uscita Cella Entro</div><div class="label-value">' + cellaExit.toLocaleDateString('it-IT') + ' ' + cellaExit.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
+                    '<div><div class="label-label">Uscita Scongelo Entro</div><div class="label-value">' + cellaExit.toLocaleDateString('it-IT') + ' ' + cellaExit.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
                     '</div>';
                 
                 // Scadenza final (saida cella + dias do produto)
                 labelHTML += '<div class="label-row">' +
-                    '<div><div class="label-label">Scadenza (' + record.daysValid + ' GG)</div><div class="label-value" style="color: #ff4444;">' + finalExpiry.toLocaleDateString('it-IT') + ' ' + finalExpiry.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
+                    '<div><div class="label-label">Scadenza</div><div class="label-value" style="color: #ff4444;">' + finalExpiry.toLocaleDateString('it-IT') + ' ' + finalExpiry.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + '</div></div>' +
                     '</div>';
             }
             
