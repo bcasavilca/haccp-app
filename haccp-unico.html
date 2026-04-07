@@ -463,6 +463,17 @@
                     '</div>';
             }
             
+            // Se tem cella, calcula scadenza de 12h
+            if (record.cellaDate && !record.cucinaDate) {
+                const cellaExpiry = record.cellaExpiryDate ? new Date(record.cellaExpiryDate) : new Date(new Date(record.cellaDate).getTime() + (12 * 60 * 60 * 1000));
+                const cellaExpStr = cellaExpiry.toLocaleDateString('it-IT');
+                const cellaExpTimeStr = cellaExpiry.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                
+                labelHTML += '<div class="label-row" style="background:#fff3e0;border:2px solid #ff9800;padding:8px;border-radius:6px;margin-top:8px;">' +
+                    '<div style="flex:1;"><div class="label-label">⚠️ USCITA CELLA ENTRO</div><div class="label-value" style="color:#ff4444;font-size:1.1rem;font-weight:bold;">' + cellaExpStr + ' ' + cellaExpTimeStr + '</div></div>' +
+                    '</div>';
+            }
+            
             labelHTML += '<div class="label-row">' +
                 '<div><div class="label-label">Scadenza (24h)</div><div class="label-value" style="color: #ff4444;">' + expDateStr + ' ' + expTimeStr + '</div></div>' +
                 '</div>' +
@@ -544,9 +555,13 @@
                 r.status === 'freezer'
             );
             
+            const now = new Date();
+            const cellaExpiry = new Date(now.getTime() + (12 * 60 * 60 * 1000)); // +12h
+            
             if (freezerRecord) {
                 // Move do freezer para cella
-                freezerRecord.cellaDate = new Date().toISOString();
+                freezerRecord.cellaDate = now.toISOString();
+                freezerRecord.cellaExpiryDate = cellaExpiry.toISOString(); // Scadenza 12h
                 freezerRecord.status = 'cella';
                 freezerRecord.currentStage = 'cella';
                 freezerRecord.cellaAlert = true; // Alerta max 12h
@@ -555,7 +570,6 @@
                 showLabel(freezerRecord);
             } else {
                 // Novo registro direto na cella
-                const now = new Date();
                 const lotNumber = generateLot();
                 const fornitore = document.getElementById('fornitoreInput')?.value || 'Niki Romito';
                 
@@ -565,6 +579,7 @@
                     emoji: currentProduct.emoji,
                     freezerDate: null,
                     cellaDate: now.toISOString(),
+                    cellaExpiryDate: cellaExpiry.toISOString(), // Scadenza 12h
                     cucinaDate: null,
                     daysValid: currentProduct.days,
                     status: 'cella',
@@ -577,6 +592,14 @@
                 
                 records.push(record);
                 saveRecords();
+                closeModal();
+                showLabel(record);
+            }
+            
+            renderProducts();
+            renderHistory();
+            updateStats();
+        }
                 closeModal();
                 showLabel(record);
             }
