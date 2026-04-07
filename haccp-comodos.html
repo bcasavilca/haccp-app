@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HACCP - Modo Cômodos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f1e; color: #fff; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; text-align: center; border-bottom: 1px solid #2a2a4e; }
+        .header h1 { font-size: 1.5rem; font-weight: 600; color: #00d4ff; }
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 15px; }
+        .product-card { background: linear-gradient(145deg, #1e1e3f 0%, #252550 100%); border-radius: 16px; padding: 16px; text-align: center; cursor: pointer; border: 1px solid #3a3a6e; }
+        .product-card:active { transform: scale(0.95); }
+        .product-emoji { font-size: 2.5rem; margin-bottom: 8px; }
+        .product-name { font-size: 0.85rem; font-weight: 600; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; }
+        .modal-overlay.active { display: flex; align-items: flex-end; }
+        .modal-content { background: #1a1a2e; width: 100%; border-radius: 24px 24px 0 0; padding: 24px; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-header { text-align: center; margin-bottom: 20px; }
+        .modal-emoji { font-size: 3rem; }
+        .modal-title { font-size: 1.3rem; margin-top: 10px; color: #00d4ff; }
+        .btn-group { display: flex; flex-direction: column; gap: 12px; }
+        .btn { padding: 16px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; color: #fff; }
+        .btn-freezer { background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); }
+        .btn-cella { background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); }
+        .btn-cucina { background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); }
+        .btn-cancel { background: #2a2a4e; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>HACCP - Modo Cômodos</h1>
+    </div>
+    
+    <div class="product-grid" id="productGrid"></div>
+    
+    <!-- Modal Principal -->
+    <div class="modal-overlay" id="mainModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-emoji" id="modalEmoji">🍔</div>
+                <div class="modal-title" id="modalTitle">Produto</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-freezer" onclick="alert('Freezer!')">
+                    ❄️ Entrata Freezer
+                </button>
+                <button class="btn btn-cella" onclick="alert('Cella!')">
+                    🧊 Entrata Cella
+                </button>
+                <button class="btn btn-cucina" onclick="alert('Cucina!')">
+                    🍳 Entrata Cucina
+                </button>
+                
+                <button class="btn btn-cancel" onclick="closeModal()">
+                    ❌ Annulla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PRODUCTS = [
+            { name: "Hamburguer", days: 1, emoji: "🍔" },
+            { name: "Panceta", days: 4, emoji: "🥓" },
+            { name: "Mozzarela", days: 4, emoji: "🧀" },
+            { name: "Pomodoro", days: 3, emoji: "🍅" }
+        ];
+
+        function init() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = PRODUCTS.map(p => 
+                `<div class="product-card" onclick="openModal('${p.name}', '${p.emoji}')">
+                    <div class="product-emoji">${p.emoji}</div>
+                    <div class="product-name">${p.name}</div>
+                </div>`
+            ).join('');
+        }
+
+        function openModal(name, emoji) {
+            document.getElementById('modalEmoji').textContent = emoji;
+            document.getElementById('modalTitle').textContent = name;
+            document.getElementById('mainModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('mainModal').classList.remove('active');
+        }
+
+        // Inicializa
+        init();
+    </script>
+</body>
+</html>
