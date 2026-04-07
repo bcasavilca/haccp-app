@@ -139,6 +139,10 @@
                 <label style="display: block; color: #888; font-size: 0.85rem; margin-bottom: 5px;">Fornitore</label>
                 <input type="text" id="fornitoreInput" value="Niki Romito" style="width: 100%; padding: 10px; background: #252550; border: 1px solid #3a3a6e; border-radius: 8px; color: #fff; font-size: 1rem;" placeholder="Nome fornitore...">
             </div>
+            <div class="form-group" style="padding: 0 20px; margin-bottom: 15px;">
+                <label style="display: block; color: #888; font-size: 0.85rem; margin-bottom: 5px;">Quantita (unita)</label>
+                <input type="number" id="quantitaInput" value="1" min="1" style="width: 100%; padding: 10px; background: #252550; border: 1px solid #3a3a6e; border-radius: 8px; color: #fff; font-size: 1rem;">
+            </div>
             <div style="padding: 0 20px; margin-bottom: 10px; color: #888; font-size: 0.8rem;">
                 <strong>Scegli la fase:</strong>
             </div>
@@ -196,6 +200,15 @@
             <div class="label-container" id="labelContent">
                 <!-- Etiqueta será gerada aqui -->
             </div>
+            <div style="padding: 0 20px; margin: 15px 0;">
+                <label style="display: block; color: #888; font-size: 0.85rem; margin-bottom: 5px;">Consuma unita</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="consumaInput" value="1" min="1" style="flex: 1; padding: 10px; background: #252550; border: 1px solid #3a3a6e; border-radius: 8px; color: #fff; font-size: 1rem;">
+                    <button class="btn" onclick="consumaUnita()" style="background: #ff4444; color: #fff; padding: 10px 20px;">
+                        Consuma
+                    </button>
+                </div>
+            </div>
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="printLabel()">🖨️ Stampa</button>
                 <button class="btn btn-secondary" onclick="closeLabelModal()">Chiudi</button>
@@ -248,6 +261,7 @@
         let records = JSON.parse(localStorage.getItem('haccp_records')) || [];
         let currentProduct = null;
         let currentFilter = 'all';
+        let currentLabelRecord = null; // Guarda o registro atual da etiqueta
 
         function init() {
             renderProducts();
@@ -269,7 +283,21 @@
                 let status = 'status-ok';
                 let statusText = 'Disponibile';
                 
-                if (openRecord) {
+                // Calcula stock total
+                const productRecords = records.filter(r => 
+                    r.product === product.name && 
+                    (r.status === 'open' || r.status === 'freezer' || r.status === 'cella')
+                );
+                const totalQuantita = productRecords.reduce((sum, r) => {
+                    const qtd = r.quantita || 1;
+                    const cons = r.quantitaConsumata || 0;
+                    return sum + (qtd - cons);
+                }, 0);
+                
+                if (totalQuantita <= 0) {
+                    status = 'status-danger';
+                    statusText = 'ESGOTADO';
+                } else if (openRecord) {
                     const expiryDate = new Date(openRecord.expiryDate);
                     const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
                     
@@ -279,11 +307,13 @@
                     
                     if (daysLeft < 0) {
                         status = 'status-danger';
-                        statusText = 'Scaduto';
+                        statusText = 'Stock: ' + totalQuantita + ' | Scaduto';
                     } else {
                         status = 'status-warning';
-                        statusText = 'Scade: ' + expDateStr + ' ' + expTimeStr;
+                        statusText = 'Stock: ' + totalQuantita + ' | Scade: ' + expDateStr;
                     }
+                } else {
+                    statusText = 'Stock: ' + totalQuantita;
                 }
                 
                 return '<div class="product-card ' + status + '" onclick="showProductModal(\'' + product.name + '\')">' +
@@ -488,6 +518,15 @@
                 '<div style="text-align: right;"><div class="label-label">Validita</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
                 '</div>';
             
+            // Mostra quantidade disponivel
+            const qtdTotal = record.quantita || 1;
+            const qtdConsumata = record.quantitaConsumata || 0;
+            const qtdDisponivel = qtdTotal - qtdConsumata;
+            
+            labelHTML += '<div class="label-row" style="background:#f0f0f0;padding:8px;margin-top:10px;">' +
+                '<div style="flex:1;"><div class="label-label">Quantita</div><div class="label-value" style="font-size:1.2rem;">' + qtdDisponivel + ' / ' + qtdTotal + '</div></div>' +
+                '</div>';
+            
             // FIFO note
             if (record.fifoNote) {
                 labelHTML += '<div style="padding:6px;font-size:0.75rem;margin-top:8px;text-align:center;">' +
@@ -498,6 +537,10 @@
             
             document.getElementById('labelContent').innerHTML = labelHTML;
             document.getElementById('labelModal').classList.add('active');
+            
+            // Guarda referencia ao registro atual para consumo
+            currentLabelRecord = record;
+            document.getElementById('consumaInput').value = '1';
         }
         
         function formatDateTime(dateString) {
@@ -508,6 +551,31 @@
 
         function closeLabelModal() {
             document.getElementById('labelModal').classList.remove('active');
+            currentLabelRecord = null;
+        }
+
+        function consumaUnita() {
+            if (!currentLabelRecord) return;
+            
+            const qtdConsumar = parseInt(document.getElementById('consumaInput').value) || 1;
+            const record = records.find(r => r.id === currentLabelRecord.id);
+            
+            if (record) {
+                record.quantitaConsumata = (record.quantitaConsumata || 0) + qtdConsumar;
+                
+                // Se consumiu tudo, fecha o registro
+                if (record.quantitaConsumata >= (record.quantita || 1)) {
+                    record.status = 'closed';
+                    alert('Lotto esaurito!');
+                    closeLabelModal();
+                } else {
+                    saveRecords();
+                    // Atualiza a etiqueta
+                    showLabel(record);
+                    renderProducts();
+                    updateStats();
+                }
+            }
         }
 
         function printLabel() {
@@ -539,7 +607,9 @@
                 lot: lotNumber,
                 responsible: 'Bruno',
                 fornitore: fornitore,
-                currentStage: 'freezer'
+                currentStage: 'freezer',
+                quantita: parseInt(document.getElementById('quantitaInput')?.value) || 1,
+                quantitaConsumata: 0
             };
             
             records.push(record);
@@ -593,7 +663,9 @@
                     responsible: 'Bruno',
                     fornitore: fornitore,
                     currentStage: 'cella',
-                    cellaAlert: true
+                    cellaAlert: true,
+                    quantita: parseInt(document.getElementById('quantitaInput')?.value) || 1,
+                    quantitaConsumata: 0
                 };
                 
                 records.push(record);
