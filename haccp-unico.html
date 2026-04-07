@@ -234,17 +234,19 @@
                 let statusText = 'Disponibile';
                 
                 if (openRecord) {
-                    const daysLeft = Math.ceil((new Date(openRecord.expiryDate) - now) / (1000 * 60 * 60 * 24));
+                    const expiryDate = new Date(openRecord.expiryDate);
+                    const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    // Formata data e hora: "Scade: DD/MM HH:MM"
+                    const expDateStr = expiryDate.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+                    const expTimeStr = expiryDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
                     
                     if (daysLeft < 0) {
                         status = 'status-danger';
                         statusText = 'Scaduto';
-                    } else if (daysLeft <= 1) {
-                        status = 'status-warning';
-                        statusText = 'Scade oggi';
                     } else {
-                        status = 'status-ok';
-                        statusText = daysLeft + ' gg rimasti';
+                        status = 'status-warning';
+                        statusText = 'Scade: ' + expDateStr + ' ' + expTimeStr;
                     }
                 }
                 
