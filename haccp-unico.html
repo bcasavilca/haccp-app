@@ -404,8 +404,10 @@
             const expDateStr = expDate.toLocaleDateString('it-IT');
             const expTimeStr = expDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
             
-            document.getElementById('labelContent').innerHTML = 
-                '<div class="label-header">' +
+            // Verifica se tem dados dos 3 estagios
+            const hasStages = record.freezerDate || record.cellaDate || record.cucinaDate;
+            
+            let labelHTML = '<div class="label-header">' +
                 '<div class="label-title">' + record.product + '</div>' +
                 '</div>' +
                 '<div class="label-row">' +
@@ -413,20 +415,57 @@
                 '</div>' +
                 '<div class="label-row">' +
                 '<div><div class="label-label">Fornitore</div><div class="label-value">' + (record.fornitore || 'Niki Romito') + '</div></div>' +
-                '</div>' +
-                '<div class="label-row">' +
-                '<div><div class="label-label">Apertura</div><div class="label-value">' + openDateStr + ' ' + openTimeStr + '</div></div>' +
-                '</div>' +
-                '<div class="label-row">' +
+                '</div>';
+            
+            // Adiciona estagios se disponiveis
+            if (record.freezerDate) {
+                labelHTML += '<div class="label-row" style="background:#e3f2fd;border-left:4px solid #2196f3;padding:8px;">' +
+                    '<div style="flex:1;"><div class="label-label">❄️ Freezer</div><div class="label-value">' + formatDateTime(record.freezerDate) + '</div></div>' +
+                    '</div>';
+            }
+            if (record.cellaDate) {
+                const cellaAlert = record.cellaAlert ? ' <span style="color:#ff4444;">⚠️ Max 12h</span>' : '';
+                labelHTML += '<div class="label-row" style="background:#fff3e0;border-left:4px solid #ff9800;padding:8px;">' +
+                    '<div style="flex:1;"><div class="label-label">🧊 Cella</div><div class="label-value">' + formatDateTime(record.cellaDate) + cellaAlert + '</div></div>' +
+                    '</div>';
+            }
+            if (record.cucinaDate) {
+                labelHTML += '<div class="label-row" style="background:#e8f5e9;border-left:4px solid #4caf50;padding:8px;">' +
+                    '<div style="flex:1;"><div class="label-label">🍳 Cucina</div><div class="label-value">' + formatDateTime(record.cucinaDate) + '</div></div>' +
+                    '</div>';
+            }
+            
+            // Se nao tem estagios, mostra apertura padrao
+            if (!hasStages) {
+                labelHTML += '<div class="label-row">' +
+                    '<div><div class="label-label">Apertura</div><div class="label-value">' + openDateStr + ' ' + openTimeStr + '</div></div>' +
+                    '</div>';
+            }
+            
+            labelHTML += '<div class="label-row">' +
                 '<div><div class="label-label">Scadenza (24h)</div><div class="label-value" style="color: #ff4444;">' + expDateStr + ' ' + expTimeStr + '</div></div>' +
                 '</div>' +
                 '<div class="label-row">' +
                 '<div><div class="label-label">Responsabile</div><div class="label-value">' + record.responsible + '</div></div>' +
                 '<div style="text-align: right;"><div class="label-label">Validità</div><div class="label-value">' + record.daysValid + ' GG</div></div>' +
-                '</div>' +
-                '<div class="label-footer">HACCP Control • Scadenza: ' + record.daysValid + ' giorni dopo apertura</div>';
+                '</div>';
             
+            // FIFO note
+            if (record.fifoNote) {
+                labelHTML += '<div style="background:#ffffcc;border:1px solid #ffcc00;padding:6px;border-radius:4px;font-size:0.75rem;margin-top:8px;text-align:center;">' +
+                    '⏰ FIFO: ' + record.fifoNote + '</div>';
+            }
+            
+            labelHTML += '<div class="label-footer">HACCP Control • ' + (hasStages ? 'Modo Cômodos' : 'Scadenza: ' + record.daysValid + ' giorni') + '</div>';
+            
+            document.getElementById('labelContent').innerHTML = labelHTML;
             document.getElementById('labelModal').classList.add('active');
+        }
+        
+        function formatDateTime(dateString) {
+            if (!dateString) return 'N/A';
+            const d = new Date(dateString);
+            return d.toLocaleDateString('it-IT') + ' ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
         }
 
         function closeLabelModal() {
