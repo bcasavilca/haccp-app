@@ -140,19 +140,19 @@
                 <input type="text" id="fornitoreInput" value="Niki Romito" style="width: 100%; padding: 10px; background: #252550; border: 1px solid #3a3a6e; border-radius: 8px; color: #fff; font-size: 1rem;" placeholder="Nome fornitore...">
             </div>
             <div style="padding: 0 20px; margin-bottom: 10px; color: #888; font-size: 0.8rem;">
-                Scegli la fase:
+                <strong>Scegli la fase:</strong>
             </div>
             <div class="btn-group" style="flex-direction: column; padding: 0 20px;">
-                <button class="btn btn-secondary" onclick="enterFreezer()" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); margin-bottom: 8px;">
+                <button class="btn" onclick="enterFreezer()" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); margin-bottom: 8px; color: #fff;">
                     ❄️ Entrata Freezer
                 </button>
-                <button class="btn btn-secondary" onclick="enterCella()" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); margin-bottom: 8px;">
+                <button class="btn" onclick="enterCella()" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); margin-bottom: 8px; color: #fff;">
                     🧊 Entrata Cella (Scongelio)
                 </button>
-                <button class="btn btn-secondary" onclick="showCucinaOptions()" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); margin-bottom: 8px;">
+                <button class="btn" onclick="showCucinaOptions()" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); margin-bottom: 8px; color: #fff;">
                     🍳 Entrata Cucina
                 </button>
-                <button class="btn btn-secondary" onclick="closeModal()" style="margin-top: 10px;">
+                <button class="btn" onclick="closeModal()" style="background: #2a2a4e; color: #fff; margin-top: 10px;">
                     ❌ Annulla
                 </button>
             </div>
@@ -296,33 +296,21 @@
         }
 
         function showProductModal(productName) {
+            console.log('showProductModal chamado para:', productName);
             currentProduct = PRODUCTS.find(p => p.name === productName);
-            if (!currentProduct) return;
-            
-            // Verifica se tem lote aberto para este produto
-            const now = new Date();
-            const openRecord = records.find(r => 
-                r.product === currentProduct.name && 
-                r.status === 'open' &&
-                new Date(r.expiryDate) > now
-            );
-            
-            // Mostra/esconde botão "Stesso Lotto"
-            const sameLotBtn = document.getElementById('sameLotBtn');
-            if (openRecord) {
-                sameLotBtn.style.display = 'block';
-                // Guarda referência ao lote atual
-                currentProduct.existingLot = openRecord;
-            } else {
-                sameLotBtn.style.display = 'none';
-                currentProduct.existingLot = null;
+            if (!currentProduct) {
+                console.log('Produto não encontrado!');
+                return;
             }
+            
+            console.log('Produto encontrado:', currentProduct);
             
             document.getElementById('modalEmoji').textContent = currentProduct.emoji;
             document.getElementById('modalTitle').textContent = currentProduct.name;
             document.getElementById('modalSubtitle').textContent = 'Validità: ' + currentProduct.days + ' giorni';
             
             document.getElementById('actionModal').classList.add('active');
+            console.log('Modal aberto!');
         }
 
         function closeModal() {
